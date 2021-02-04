@@ -1,4 +1,5 @@
 import React from 'react';
+import ToggleSwitch from './ToggleSwitch/ToggleSwitch'
 import ReactDOM from 'react-dom';
 import './index.css';
 
@@ -21,24 +22,31 @@ class Board extends React.Component {
     );
   }
 
+  renderSquares() {
+    let board = [];
+
+    for (var i = 0; i < 3; i++) {
+      let row = [];
+      for (var j = 0; j < 3; j++) {
+        row.push(this.renderSquare(i*3 + j));
+      }
+      board.push(<div className="board-row">{row}</div>);
+    }
+
+    return board;
+  }
+
   render() {
     return (
       <div>
-        <div className="board-row">
-          {this.renderSquare(0)}
-          {this.renderSquare(1)}
-          {this.renderSquare(2)}
-        </div>
-        <div className="board-row">
-          {this.renderSquare(3)}
-          {this.renderSquare(4)}
-          {this.renderSquare(5)}
-        </div>
-        <div className="board-row">
-          {this.renderSquare(6)}
-          {this.renderSquare(7)}
-          {this.renderSquare(8)}
-        </div>
+        {
+          [0, 1, 2].map( (i) => {
+            const row = [0, 1, 2].map( (j) => {
+              return this.renderSquare(i*3 + j);
+            });
+            return (<div className="board-row">{row}</div>);
+          })
+        }
       </div>
     );
   }
@@ -53,7 +61,14 @@ class Game extends React.Component {
       }],
       stepNumber: 0,
       xIsNext: true,
+      descendingOrder: false,
     };
+  }
+
+  ToggleButton() {
+    this.setState((state) => ({
+      descendingOrder: !state.descendingOrder,
+    }));
   }
 
   handleClick(i) {
@@ -63,19 +78,27 @@ class Game extends React.Component {
 
     if (!(calculateWinner(squares) || squares[i])) {
       squares[i] = this.state.xIsNext ? 'X' : 'O';
-      this.setState({
-        history: history.concat([{squares: squares,}]),
-        stepNumber: history.length,
-        xIsNext: !this.state.xIsNext,
+      this.setState((step, props) => {
+        return {
+          history: history.concat([{squares: squares,}]),
+          stepNumber: history.length,
+          xIsNext: !this.state.xIsNext,
+        }
       });
     }
   }
 
   jumpTo(step) {
-    this.setState({
-      stepNumber: step,
-      xIsNext: (step % 2) === 0,
+    this.setState((step, props) => {
+      return {
+        stepNumber: step,
+        xIsNext: (step % 2) === 0,
+      }
     });
+  }
+
+  setButtonFontWeight(move) {
+    return this.state.stepNumber === move ? 'bold' : 'normal';
   }
 
   render() {
@@ -85,37 +108,37 @@ class Game extends React.Component {
     let status;
     let prevSquares;
 
-    const moves = history.map((step, move) => {
-      let location = -1;
+    let moves = history.map((step, move) => {
+      let desc = move ?
+        'Go to move #' + move :
+        'Go to game start';
 
       if (move > 0) {
         for (var i = 0; i < 9; i++) {
           if (step["squares"][i] !== prevSquares[i]) {
-            location = i;
-            break;
+            const col = (i % 3) + 1;
+            const row = Math.floor(i / 3) + 1;
+            desc += " (" + col + "," + row + ")";
           }
         }
       }
 
       prevSquares = step["squares"];
 
-      console.log("location: " + location);
-      let desc = move ?
-        'Go to move #' + move :
-        'Go to game start';
-
-      if (location !== -1) {
-        var col = (location % 3) + 1;
-        var row = Math.floor(location / 3) + 1;
-        desc += " (" + col + "," + row + ")";
-      }
-
       return (
         <li key={move}>
-          <button onClick={() => this.jumpTo(move)}>{desc}</button>
+          <button
+           style={{ fontWeight: this.setButtonFontWeight(move) }}
+           onClick={() => this.jumpTo(move)}>
+          {desc}
+          </button>
         </li>
       );
     });
+
+    if (this.state.descendingOrder) {
+      moves = moves.reverse();
+    }
 
     if (winner) {
       status = 'Winner: ' + winner;
@@ -133,6 +156,7 @@ class Game extends React.Component {
         </div>
         <div className="game-info">
           <div>{status}</div>
+          <ToggleSwitch Name='descendingOrder' />
           <ol>{moves}</ol>
         </div>
       </div>
