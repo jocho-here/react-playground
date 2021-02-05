@@ -62,13 +62,8 @@ class Game extends React.Component {
       stepNumber: 0,
       xIsNext: true,
       descendingOrder: false,
+      checked: false,
     };
-  }
-
-  ToggleButton() {
-    this.setState((state) => ({
-      descendingOrder: !state.descendingOrder,
-    }));
   }
 
   handleClick(i) {
@@ -89,7 +84,7 @@ class Game extends React.Component {
   }
 
   jumpTo(step) {
-    this.setState((step, props) => {
+    this.setState((state, props) => {
       return {
         stepNumber: step,
         xIsNext: (step % 2) === 0,
@@ -156,11 +151,20 @@ class Game extends React.Component {
         </div>
         <div className="game-info">
           <div>{status}</div>
-          <ToggleSwitch Name='descendingOrder' />
+          <ToggleSwitch id="switch" onChange={() => this.setChecked()} />
           <ol>{moves}</ol>
         </div>
       </div>
     );
+  }
+
+  setChecked() {
+    console.log("hi");
+    this.setState((state, props) => {
+      return {
+        descendingOrder: !state.descendingOrder
+      }
+    });
   }
 }
 
