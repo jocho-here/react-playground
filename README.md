@@ -16,6 +16,7 @@
 ## 3. A re-introduction to Javascript (JS Tutorial)
 - https://developer.mozilla.org/en-US/docs/Web/JavaScript/A_re-introduction_to_JavaScript
 - Since I haven't programmed anything in Javascript before, let's skim through Javascript 101 before hitting the React.
+- I'm currently writing a note in the sub-directory `mozilla-js-intro`
 
 ## 4. Main Concepts
 - https://reactjs.org/docs/hello-world.html
