@@ -258,4 +258,63 @@ var charsInBody = (function counter(elm) {
 ```
 
 ## Custom objects
-- TBD: https://developer.mozilla.org/en-US/docs/Web/JavaScript/A_re-introduction_to_JavaScript#custom_objects
+```
+// Person.prototype is an object shared by all instances of Person.
+// Anything assigned to Person.prototype becomes available to all Person instances
+function Person(first, last) {
+  this.first = first;
+  this.last = last;
+}
+Person.prototype.fullName = function() {
+  return this.first + ' ' + this.last;
+};
+Person.prototype.fullNameReversed = function() {
+  return this.last + ', ' + this.first;
+};
+
+// JavaScript lets you modify something's prototype at any time in your program
+var s = new Person('Simon', 'Willison');
+s.firstNameCaps(); // TypeError on line 1: s.firstNameCaps is not a function
+
+Person.prototype.firstNameCaps = function() {
+  return this.first.toUpperCase();
+};
+s.firstNameCaps(); // "SIMON"
+
+var s = new Person('Simon', 'Willison');
+s.toString(); // [object Object]
+
+Person.prototype.toString = function() {
+  return '<Person: ' + this.fullName() + '>';
+}
+
+s.toString(); // "<Person: Simon Willison>"
+```
+
+## Inner Functions
+```
+// Inner functions can access variables in their parent function's scope
+
+function parentFunc() {
+  var a = 1;
+
+  function nestedFunc() {
+    var b = 4; // parentFunc can't use this
+    return a + b;
+  }
+  return nestedFunc(); // 5
+}
+```
+
+## Closures
+```
+function makeAdder(a) {
+  return function(b) {
+    return a + b;
+  };
+}
+var add5 = makeAdder(5);
+var add20 = makeAdder(20);
+add5(6); // 11
+add20(7); // 27
+```
