@@ -1,10 +1,12 @@
 # React Playground
 
-## 1. React Official Tutorial (Done: 1/31)
+## 1. React Official Tutorial Tic-Tac-Toe (Done: 1/31)
+- [./tic-tac-toe](./tic-tac-toe/)
 - https://reactjs.org/tutorial/tutorial.html
 - Following the tutorial to create a simple tic-tac-toe
 
 ## 2. Further developing the tic-tac-toe (Done: 2/8)
+- [./tic-tac-toe](./tic-tac-toe/)
 - https://reactjs.org/tutorial/tutorial.html
 - Display the location for each move in the format (col, row) in the move history list (Done: 2/1)
 - Bold the currently selected item in the move list (Done: 2/3)
@@ -13,12 +15,12 @@
 - When someone wins, highlight the three squares that caused the win (Done: 2/8)
 - When no one wins, display a message about the result being a draw (Done: 2/8)
 
-## 3. A re-introduction to Javascript (JS Tutorial)
+## 3. A re-introduction to Javascript (JS Tutorial) (Done: 2/15)
+- [./mozilla-js-intro](./mozilla-js-intro/)
 - https://developer.mozilla.org/en-US/docs/Web/JavaScript/A_re-introduction_to_JavaScript
 - Since I haven't programmed anything in Javascript before, let's skim through Javascript 101 before hitting the React.
 - I'm currently writing a note in the sub-directory `mozilla-js-intro`
 
 ## 4. Main Concepts
+- [./react-step-by-step](./react-step-by-step/)
 - https://reactjs.org/docs/hello-world.html
-
-## TBD
