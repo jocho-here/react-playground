@@ -195,4 +195,188 @@ function Comment(props) {
 - React has a single strict rule: All React components must act like functions with respect to their props.
 
 ## State and Lifecycle
-- https://reactjs.org/docs/state-and-lifecycle.html
+```
+// Let's make this clock component truly reusable and encapsulated
+function tick() {
+  const element = (
+    <div>
+      <h1>Hello, world!</h1>
+      <h2>It is {new Date().toLocaleTimeString()}.</h2>
+    </div>
+  );
+  ReactDOM.render(
+    element,
+    document.getElementById('root')
+  );
+}
+
+setInterval(tick, 1000);
+
+// Ideally we want to wrtie this once and have the Clock update itself
+ReactDOM.render(
+  <Clock />,
+  document.getElementById('root')
+);
+```
+---
+- State is similar to props, but it is private and fully contorlled by the component
+---
+- Converting a Function to a Class
+1. Create an ES6 class, with the same name, that extends `React.Component`
+2. Add a single empty method to it called `render()`
+3. Move the body of the function into the `render()` method
+4. Replace `props` with `this.props` in the `render()` body
+5. Delete the remaining empty function declaration
+
+```
+// From this
+function Clock(props) {
+  return (
+    <div>
+      <h1>Hello, world!</h1>
+      <h2>It is {props.date.toLocaleTimeString()}.</h2>
+    </div>
+  );
+}
+
+// To this
+class Clock extends React.Component {
+  render() {
+    return (
+      <div>
+        <h1>Hello, world!</h1>
+        <h2>It is {this.props.date.toLocaleTimeString()}.</h2>
+      </div>
+    );
+  }
+}
+```
+- The `render` method will be called each time an update happens, but only a single instance of the `Clock` class will be used
+---
+- Converting from using `props` to `state`
+1. Replace `this.props.date` with `this.state.date` in the `render()` method
+2. Add a class constructor that assigns the initial `this.state`
+3. Remove the `date` prop from the `<Clock />` element
+```
+class Clock extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = {date: new Date()};
+  }
+  render() {
+    return (
+      <div>
+        <h1>Hello, world!</h1>
+        <h2>It is {this.state.date.toLocaleTimeString()}.</h2>
+      </div>
+    );
+  }
+}
+
+ReactDOM.render(
+  <Clock />,
+  document.getElementById('root')
+);
+```
+---
+- We want to set up a timer whenever the Clock is rerndered to the DOM for the first time
+    - This is called "mounting" in React
+- We also want to clear that timer whenever the DOM produced by the `Clock` is removed
+    - This is called "unmounting" in React
+- These two can be handled by lifecycle methods
+    - `componentDidMount() {...}`
+        - This method runs after the component output has been rendered to the DOM
+        - Good place to set up a timer
+    - `componentWillUnmount() {...}`
+        - We'll tear down the timer here
+```
+// Final form
+class Clock extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = {date: new Date()};
+  }
+
+  componentDidMount() {
+    this.timerID = setInterval(
+      () => this.tick(),
+      1000
+    );
+  }
+
+  componentWillUnmount() {
+    clearInterval(this.timerID);
+  }
+
+  tick() {
+    this.setState({
+      date: new Date()
+    });
+  }
+  render() {
+    return (
+      <div>
+        <h1>Hello, world!</h1>
+        <h2>It is {this.state.date.toLocaleTimeString()}.</h2>
+      </div>
+    );
+  }
+}
+
+ReactDOM.render(
+  <Clock />,
+  document.getElementById('root')
+);
+```
+- With `this.setState()`, it knows that states are changing
+---
+- Do not modify state directly
+```
+// Wrong
+this.state.comment = 'Hello';
+
+// Correct
+this.setState({comment: 'Hello'});
+
+// Wrong 
+this.setState({
+  counter: this.state.counter + this.props.increment,
+});
+
+// Correct
+this.setState((state, props) => ({
+  counter: state.counter + props.increment,
+}));
+// Or
+this.setState(function(state, props) {
+  return {
+    counter: state.counter + props.increment
+  };
+});
+```
+---
+- `setState()` merges the object you provide into the current state
+```
+componentDidMount() {
+  fetchPosts().then(response => {
+    this.setState({
+      posts: response.posts
+    });
+  });
+
+  fetchComments().then(response => {
+    this.setState({
+      comments: response.comments
+    });
+  });
+}
+// After all, it will leave posts and comments both modified
+```
+---
+- Finally, neither parent nor child components can know if a cetain component is stateful or stateless.
+    - This is why state is often called local or encapsulalted
+    - Top-Down or Unidirectional data flow
+- If you set up 3 clocks, each one sets up its own timer and updates independently
+
+## Handling Events
+- https://reactjs.org/docs/handling-events.html
