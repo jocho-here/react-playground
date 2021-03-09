@@ -379,4 +379,357 @@ componentDidMount() {
 - If you set up 3 clocks, each one sets up its own timer and updates independently
 
 ## Handling Events
-- https://reactjs.org/docs/handling-events.html
+- With JSX you pass a function as the event handler, rather than a string
+```
+// Instead of this
+<button onclick="activateLasers()">
+  Activate Lasers
+</button>
+// We do this
+<button onClick={activateLasers}>
+  Activate Lasers
+</button>
+```
+---
+- You cannot return `false` to prevent default behavior in React but you should call `preventDefault` explicitly
+```
+// Instead of this
+<a href="#" onclick="console.log('The link was clicked.'); return false">
+  Click me
+</a>
+// We do this
+function ActionLink() {
+  function handleClick(e) {
+    e.preventDefault();
+    console.log('The link was clicked.');
+  }
+  return (
+    <a href="#" onClick={handleClick}>
+      Click me
+    </a>
+  );
+}
+```
+- When using React, you don't need to call `addEventListener` to add listeners to a DOM element after it is created
+    - Instead, provide a listener when the element is initially rendered
+```
+class Toggle extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = {isToggleOn: true};
+
+    // This binding is necessary to make `this` work in the callback
+    this.handleClick = this.handleClick.bind(this);
+  }
+
+  handleClick() {
+    this.setState(state => ({
+      isToggleOn: !state.isToggleOn
+    }));
+  }
+  render() {
+    return (
+      <button onClick={this.handleClick}>
+        {this.state.isToggleOn ? 'ON' : 'OFF'}
+      </button>
+    );
+  }
+}
+
+ReactDOM.render(
+  <Toggle />,
+  document.getElementById('root')
+);
+
+// If calling bind annoys you, you can get around with using public class fields syntax
+class LoggingButton extends React.Component {
+  // This syntax ensures `this` is bound within handleClick.
+  // Warning: this is *experimental* syntax
+  handleClick = () => {
+    console.log('this is :', this);
+  }
+
+  render() {
+    return (
+      <button onClick={this.handleClick}>
+        Click me
+      </button>
+    );
+  }
+}
+
+// Or you can do the following
+class LoggingButton extends React.Component {
+  handleClick() {
+    console.log('this is:', this);
+  }
+
+  render() {
+    // This syntax ensures `this` is bound within handleClick
+    return (
+      <button onClick={() => this.handleClick()}>
+        Click me
+      </button>
+    );
+  }
+}
+```
+---
+- Passing arguments to event handlers
+```
+// `id` is the row ID, either of the following would work
+
+// arrow function
+// `e` argument representing the React event will be passed
+// We have to pass it explicitly here
+<button onClick={(e) => this.deleteRow(id, e)}>Delete Row</button>
+
+// Function.prototype.bind
+// With `bind`, any further arguments are automatically forwarded
+<button onClick={this.deleteRow.bind(this, id)}>Delete Row</button>
+```
+---
+
+## Conditional Rendering
+- Use JavaScript operators like `if` or the `conditional operator` to create elements representing the current state and let React update the UI to match them
+```
+function UserGreeting(props) {
+  return <h1>Welcome back!</h1>;
+}
+
+function GuestGreeting(props) {
+  return <h1>Please sign up.</h1>;
+}
+
+function Greeting(props) {
+  const isLoggedIn = props.isLoggedIn;
+  if (isLoggedIn) {
+    return <UserGreeting />;
+  }
+  return <GuestGreeting />;
+}
+
+ReactDOM.render(
+  <Greeting isLoggedIn={false} />,
+  document.getElementById('root')
+);
+
+// Different greeting and button based on whether the user is logged in
+function LoginButton(props) {
+  return (
+    <button onClick={props.onClick}>
+      Login
+    </button>
+  );
+}
+function LogoutButton(props) {
+  return (
+    <button onClick={props.onClick}>
+      Logout
+    </button>
+  );
+}
+class LoginControl extends React.Component {
+  constructor(props) {
+    super(props);
+    this.handleLoginClick = this.handleLoginClick.bind(this);
+    this.handleLogoutClick = this.handleLogoutClick.bind(this);
+    this.state = {isLoggedIn: false};
+  }
+
+  handleLoginClick() {
+    this.setState({isLoggedIn: true});
+  }
+
+  handleLogoutClick() {
+    this.setState({isLoggedIn: false});
+  }
+
+  render() {
+    const isLoggedIn = this.state.isLoggedIn;
+    let button;
+    if (isLoggedIn) {
+      button = <LogoutButton onClick={this.handleLogoutClick} />;
+    } else {
+      button = <LoginButton onClick={this.handleLoginClick} />;
+    }
+    return (
+      <div>
+        <Greeting isLoggedIn={isLoggedIn} />
+        {button}
+      </div>
+    );
+  }
+}
+
+ReactDOM.render(
+  <LoginControl />,
+  document.getElementById('root')
+);
+```
+
+- You may embed expressions in JSX by wrapping them in curly braces
+```
+// Including &&
+function Mailbox(props) {
+  const unreadMessages = props.unreadMessages;
+  return (
+    <div>
+      <h1>Hello!</h1>
+      {unreadMessages.length > 0 &&
+        <h2>
+          You have {unreadMessages.length} unread messages.
+        </h2>
+      }
+    </div>
+  );
+}
+
+const messages = ['React', 'Re: React', 'Re:Re: React'];
+ReactDOM.render(
+  <Mailbox unreadMessages={messages} />,
+  document.getElementById('root')
+);
+```
+- This works because in JavaScript, `true && expression` always evaluates to `expression`, and `false && expression` always evalutes to `false`
+
+- We can input `condition ? true : false` inline as well
+```
+render() {
+  const isLoggedIn = this.state.isLoggedIn;
+  return (
+    <div>
+      The user is <b>{isLoggedIn ? 'currently' : 'not'}</b> logged in.
+    </div>
+  );
+}
+```
+
+- If you want to hide a component even though it was rendered by another component, return `null` instead of its render output
+```
+function WarningBanner(props) {
+  if (!props.warn) {
+    return null;
+  }
+
+  return (
+    <div className="warning">
+      Warning!
+    </div>
+  );
+}
+
+class Page extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = {showWarning: true}
+    this.handleToggleClick = this.handleToggleClick.bind(this);
+  }
+
+  handleToggleClick() {
+    this.setState(prevState => ({
+      showWarning: !prevState.showWarning
+    }));
+  }
+  
+  render() {
+    return (
+      <div>
+        <WarningBanner warn={this.state.showWarning} />
+        <button onClick={this.handleToggleClick}>
+          {this.state.showWarning ? 'Hide' : 'Show'}
+        </button>
+      </div>
+    );
+  }
+}
+
+ReactDOM.render(
+  <Page />,
+  document.getElementById('root')
+);
+```
+
+## Lists and Keys
+- Transforming lists using `map()`
+```
+const numbers = [1,2,3,4,5];
+const doubled = numbers.map((number) => number * 2);
+console.log(doubled);  // [2, 4, 6, 8, 10]
+```
+
+- You can build collections of elements and include them in JSX using curly braces `{}`
+```
+function NumberList(props) {
+  const numbers = props.numbers;
+  const listItems = numbers.map((number) =>
+    <li key={number.toString()}>
+      {number}
+    </li>
+  );
+  return (
+    <ul>{listItems}</ul>
+  );
+}
+
+const numbers = [1, 2, 3, 4, 5];
+ReactDOM.render(
+  <NumberList numbers={numbers} />,
+  document.getElementById('root')
+);
+```
+- Keys help React identify which items have changed, are added, or are removed
+    - The best way to pick a key is to use a string that uniquely identifies a list item among its sibilings
+    - Most often IDs from your data, at least the item index, but not recommended
+
+- Correct Key Usage
+```
+function ListItem(props) {
+  // Correct! There is no need to specify the key here:
+  return <li>{props.value}</li>;
+}
+
+function NumberList(props) {
+  const numbers = props.numbers;
+  const listItems = numbers.map((number) =>
+    // Correct! Key should be specified inside the array.
+    <ListItem key={number.toString()} value={number} />
+  );
+  return (
+    <ul>
+      {listItems}
+    </ul>
+  );
+}
+
+const numbers = [1, 2, 3, 4, 5];
+ReactDOM.render(
+  <NumberList numbers={numbers} />,
+  document.getElementById('root')
+);
+```
+- A good rule of thumb is that elements inside the `map()` call need keys
+
+- Keys used within arrays should be unique among their sibilings
+    - Doesn't need to be unique globally
+- If you need the same value in your component, pass it explicitly as a prop with a different name
+    - Keys don't get passed to your components automatically
+
+- Embedding `map()` in curly braces
+```
+function NumberList(props) {
+  const numbers = props.numbers;
+  return (
+    <ul>
+      {numbers.map((number) =>
+        <ListItem key={number.toString()}
+                  value={number} />
+      )}
+    </ul>
+  );
+}
+```
+- If the `map()` body is too nested, it might be a good time to extract a component
+
+## Forms
+- https://reactjs.org/docs/forms.html
