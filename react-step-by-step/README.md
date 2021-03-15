@@ -103,7 +103,7 @@ setInterval(tick, 1000);
 ## Components and Props
 - Conceptually, components are like JavaScript functions. They accept arbitrary inputs (called "props") and return React elements describing what should appear on the screen.
 ---
-- Simplest way to define a component is to write a JavaZScript function
+- Simplest way to define a component is to write a JavaScript function
 ```
 function Welcome(props) {
   return <h1>Hello, {props.name}</h1>;
@@ -732,4 +732,116 @@ function NumberList(props) {
 - If the `map()` body is too nested, it might be a good time to extract a component
 
 ## Forms
-- https://reactjs.org/docs/forms.html
+- Through a technique called "controlled components", we can have a JavaScript function handle the submission of the form
+```
+<form>
+  <label>
+    Name:
+    <input type="text" name="name" />
+  </label>
+  <input type="submit" value="Submit" />
+</form>
+```
+---
+- In HTML, form elements typically maintain their own state and update it based on user input.
+    - In React, mutable state is kept in the state property of components, and only updated with `setState()`
+    - We can combine the two by making the React state be the "single source of truth"
+    - An input form element whose value is controlled by React in this way is called a "controlled component"
+```
+// Controlled component to log the name when it is submitted
+class NameForm extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = {value: ''};
+
+    this.handleChange = this.handleChange.bind(this);
+    this.handleSubmit = this.handleSubmit.bind(this);
+  }
+
+  handleChange(event) {
+    this.setState({value: event.target.value});
+  }
+
+  handleSubmit(event) {
+    alert('A name was submitted: ' + this.state.value);
+    event.preventDefault();
+  }
+
+  render() {
+    return (
+      <form onSubmit={this.handleSubmit}>
+        <label>
+          Name:
+          <input type="text" value={this.state.value} onChange={this.handleChange} />
+        </label>
+        <input type="submit" value="Submit" />
+      </form>
+    );
+  }
+}
+
+ReactDOM.render(
+  <NameForm />,
+  document.getElementById('root')
+);
+```
+- With a controlled component, the input's value is always driven by the React state
+
+---
+- `<textarea>` element al uses a `value` attribute instead, like how we used `<input>`
+```
+... // all the same
+  render() {
+    return (
+      <form onSubmit={this.handleSubmit}>
+        <label>
+          Essay:
+          <textarea value={this.state.value} onChange={this.handleChange} />
+        </label>
+        <input type="submit" value="Submit" />
+      </form>
+    );
+  }
+}
+```
+
+---
+- In HTML, `<select>` creates a drop-down list
+```
+<select>
+  <option value="lime">Coconut</option>
+  <option selected value="coconut">Coconut</option>
+</select>
+```
+- Instead of using `selected` to set the default value, we can use the `value` attribute
+```
+class FlavorForm extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = {value: 'coconut'};
+    ...
+  }
+  ...
+
+  render() {
+    return (
+      <form onSubmit={this.handleSubmit}>
+        <label>
+          Pick your favorite flavor:
+          <select value={this.state.value} onChange={this.handleChange}>
+            <option value="grapefruit">Grapefruit</option>
+            <option value="lime">Lime</option>
+            <option value="coconut">Coconut</option>
+            <option value="mango">Mango</option>
+          </select>
+        </label>
+        <input type="submit" value="Submit" />
+      </form>
+    );
+  }
+}
+...
+```
+---
+- When you need to handle multiple controlled `input` elements, you can add a `name` attribute to each element and let the handler function choose what to do based on the value of `event.target.name`
+- https://reactjs.org/docs/forms.html#handling-multiple-inputs
